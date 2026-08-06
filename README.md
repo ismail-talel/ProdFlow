@@ -68,7 +68,7 @@ Le proxy (`proxy.conf.json`) redirige `/api` vers le backend sur le port `3000`.
 
 ```
 ProdFlow/
-├── backand/          # API Express
+├── backand/         
 │   ├── config/
 │   ├── controllers/
 │   ├── middlewares/
@@ -76,7 +76,7 @@ ProdFlow/
 │   ├── routes/
 │   ├── services/
 │   └── index.js
-└── frontend/         # Application Angular
+└── frontend/        
     └── src/app/
         ├── guards/
         ├── pages/
