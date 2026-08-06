@@ -84,9 +84,7 @@ class OrderService {
     return order;
   }
 
-  // ==========================================
-  // CRÉER — responsable magasin / réception
-  // ==========================================
+ 
   static async create(data, user) {
     assertRole(
       user,
@@ -175,9 +173,7 @@ class OrderService {
     return order;
   }
 
-  // ==========================================
-  // MODIFIER — réception / expédition
-  // ==========================================
+
   static async modify(id, data, user, commentaire = '') {
     assertRole(
       user,
@@ -298,7 +294,7 @@ class OrderService {
       throw createError('Aucune modification détectée', 400);
     }
 
-    // Enregistrer aussi dans corrections[]
+   
     for (const change of changes) {
       order.corrections.push({
         field: change.field,
@@ -310,7 +306,7 @@ class OrderService {
       });
     }
 
-    // Statut inchangé : uniquement Attente Vérification / Confirmé
+   
     order.status = 'en_attente_verification';
     order.version += 1;
 
@@ -334,7 +330,7 @@ class OrderService {
     return order;
   }
 
-  // Compat : anciennes corrections via verify
+
   static async verifyAndCorrect(id, corrections, user, commentaire = '') {
     assertRole(
       user,
@@ -446,9 +442,7 @@ class OrderService {
     return order;
   }
 
-  // ==========================================
-  // CONFIRMER — réception / expédition
-  // ==========================================
+ 
   static async confirm(id, user, commentaire = '') {
     assertRole(
       user,
@@ -612,7 +606,7 @@ class OrderService {
     };
   }
 
-  // Modifier une entrée d'historique (commentaire / description)
+ 
   static async updateHistoryEntry(orderId, historyId, data, user) {
     assertRole(
       user,
@@ -674,7 +668,7 @@ class OrderService {
     return order;
   }
 
-  // Historique global de tous les bons de commande
+ 
   static async getGlobalHistory(filters = {}) {
     const page = Math.max(1, Number(filters.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(filters.limit) || 20));
@@ -803,7 +797,7 @@ class OrderService {
     return { _id: id, deleted: true, orderNumber, commentaire: commentaire || '' };
   }
 
-  /** Normalise les anciens statuts vers Attente Vérification / Confirmé */
+
   static async migrateStatusesToTwoStates() {
     await Order.updateMany(
       { status: { $in: ['en_correction'] } },
@@ -813,7 +807,7 @@ class OrderService {
       { status: { $in: ['partiellement_recu', 'recu'] } },
       { $set: { status: 'confirme' } }
     );
-    // Anciennes commandes annulées : on les retire
+    
     await Order.deleteMany({ status: 'annule' });
   }
 }
