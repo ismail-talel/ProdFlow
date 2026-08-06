@@ -370,9 +370,7 @@ class PDFService {
     });
   }
 
-  // ==========================================
-  // MÉTA COMMANDE
-  // ==========================================
+
   static drawOrderMeta(doc, order, startY, colors, fonts, fontSize) {
     const left = 42;
     const width = doc.page.width - 84;
@@ -421,9 +419,7 @@ class PDFService {
     return startY + boxH + 14;
   }
 
-  // ==========================================
-  // TABLEAU PRODUITS
-  // ==========================================
+ 
   static drawProductTable(doc, order, startY, colors, fonts, fontSize, currency) {
     const left = 42;
     const tableWidth = doc.page.width - 84;
@@ -524,9 +520,7 @@ class PDFService {
     return y + 14;
   }
 
-  // ==========================================
-  // TOTAUX
-  // ==========================================
+ 
   static drawTotals(doc, order, startY, colors, fonts, fontSize, currency) {
     let y = startY;
     if (y > doc.page.height - 170) {
@@ -589,9 +583,7 @@ class PDFService {
     return y + boxH + 16;
   }
 
-  // ==========================================
-  // NOTES & CONDITIONS
-  // ==========================================
+ 
   static drawNotesAndTerms(doc, settings, order, startY, colors, fonts, fontSize) {
     let y = startY;
     if (y > doc.page.height - 150) {
@@ -691,9 +683,7 @@ class PDFService {
       );
   }
 
-  // ==========================================
-  // PIED DE PAGE
-  // ==========================================
+ =
   static drawFooter(doc, settings, order, colors, fonts) {
     const range = doc.bufferedPageRange();
     const company = settings.company || {};
