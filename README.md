@@ -51,15 +51,6 @@ npm start
 
 L’API écoute sur `http://localhost:3000` (préfixe `/api`).
 
-### 2. Frontend
-
-Dans un autre terminal :
-
-```bash
-cd frontend
-npm install
-npm start
-```
 
 L’application Angular est disponible sur `http://localhost:4200`.  
 Le proxy (`proxy.conf.json`) redirige `/api` vers le backend sur le port `3000`.
