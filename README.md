@@ -43,17 +43,13 @@ npm install
 
 Démarrez l’API :
 
-``
+```
 npm run dev
 # ou
 npm start
 ```
 
-L’API écoute sur `http://localhost:3000` (préfixe `/api`).
 
-
-L’application Angular est disponible sur `http://localhost:4200`.  
-Le proxy (`proxy.conf.json`) redirige `/api` vers le backend sur le port `3000`.
 
 ## Structure du projet
 
@@ -74,14 +70,7 @@ ProdFlow/
         └── services/
 ```
 
-## Scripts utiles
 
-| Emplacement | Commande | Description |
-|-------------|----------|-------------|
-| `backand/` | `npm start` | Lance le serveur |
-| `backand/` | `npm run dev` | Lance avec rechargement (`node --watch`) |
-| `frontend/` | `npm start` | Serveur de développement Angular |
-| `frontend/` | `npm run build` | Build de production |
 
 ## API (aperçu)
 
