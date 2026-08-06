@@ -15,14 +15,14 @@ const sanitizeUser = (user) => {
 };
 
 class UserService {
-  // Créer
+  
   static async create(data) {
     const user = new User(data);
     await user.save();
     return sanitizeUser(user);
   }
 
-  // Trouver
+
   static async findById(id) {
     return await User.findById(id);
   }
@@ -44,18 +44,18 @@ class UserService {
     return await User.find(query).sort({ createdAt: -1 });
   }
 
-  // Mettre à jour
+
   static async update(id, data) {
     delete data.password;
     return await User.findByIdAndUpdate(id, { $set: data }, { new: true });
   }
 
-  // Supprimer
+
   static async delete(id) {
     return await User.findByIdAndDelete(id);
   }
 
-  // Login
+ 
   static async login(email, password) {
     const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
     if (!user) throw createError('Email ou mot de passe incorrect', 401);
