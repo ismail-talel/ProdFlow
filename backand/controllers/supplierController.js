@@ -1,12 +1,6 @@
 const SupplierService = require('../services/supplierService');
 
-// ============================================
-// CRUD FOURNISSEUR - COMPLET
-// ============================================
 
-// ==========================================
-// 1. CRÉER UN FOURNISSEUR
-// ==========================================
 exports.createSupplier = async (req, res, next) => {
   try {
     const supplier = await SupplierService.create(req.body);
@@ -20,9 +14,7 @@ exports.createSupplier = async (req, res, next) => {
   }
 };
 
-// ==========================================
-// 2. RÉCUPÉRER TOUS LES FOURNISSEURS
-// ==========================================
+
 exports.getSuppliers = async (req, res, next) => {
   try {
     const { search, isActive } = req.query;
@@ -38,9 +30,7 @@ exports.getSuppliers = async (req, res, next) => {
   }
 };
 
-// ==========================================
-// 3. RÉCUPÉRER UN FOURNISSEUR PAR ID
-// ==========================================
+
 exports.getSupplierById = async (req, res, next) => {
   try {
     const supplier = await SupplierService.findById(req.params.id);
@@ -61,9 +51,7 @@ exports.getSupplierById = async (req, res, next) => {
   }
 };
 
-// ==========================================
-// 4. METTRE À JOUR UN FOURNISSEUR
-// ==========================================
+
 exports.updateSupplier = async (req, res, next) => {
   try {
     const supplier = await SupplierService.update(req.params.id, req.body);
@@ -85,9 +73,7 @@ exports.updateSupplier = async (req, res, next) => {
   }
 };
 
-// ==========================================
-// 5. SUPPRIMER UN FOURNISSEUR (Définitif)
-// ==========================================
+
 exports.deleteSupplier = async (req, res, next) => {
   try {
     const supplier = await SupplierService.delete(req.params.id);
@@ -108,9 +94,7 @@ exports.deleteSupplier = async (req, res, next) => {
   }
 };
 
-// ==========================================
-// 6. DÉSACTIVER UN FOURNISSEUR
-// ==========================================
+
 exports.deactivateSupplier = async (req, res, next) => {
   try {
     const supplier = await SupplierService.deactivate(req.params.id);
@@ -132,9 +116,7 @@ exports.deactivateSupplier = async (req, res, next) => {
   }
 };
 
-// ==========================================
-// 7. ACTIVER UN FOURNISSEUR
-// ==========================================
+
 exports.activateSupplier = async (req, res, next) => {
   try {
     const supplier = await SupplierService.activate(req.params.id);
@@ -156,9 +138,7 @@ exports.activateSupplier = async (req, res, next) => {
   }
 };
 
-// ==========================================
-// 8. RECHERCHER DES FOURNISSEURS
-// ==========================================
+
 exports.searchSuppliers = async (req, res, next) => {
   try {
     const { q } = req.query;
@@ -182,9 +162,7 @@ exports.searchSuppliers = async (req, res, next) => {
   }
 };
 
-// ==========================================
-// 9. STATISTIQUES DES FOURNISSEURS
-// ==========================================
+
 exports.getSupplierStats = async (req, res, next) => {
   try {
     const stats = await SupplierService.getStats();
@@ -198,9 +176,7 @@ exports.getSupplierStats = async (req, res, next) => {
   }
 };
 
-// ==========================================
-// 10. RÉCUPÉRER LES PRODUITS D'UN FOURNISSEUR
-// ==========================================
+
 exports.getSupplierProducts = async (req, res, next) => {
   try {
     const products = await SupplierService.getProducts(req.params.id);
@@ -215,9 +191,7 @@ exports.getSupplierProducts = async (req, res, next) => {
   }
 };
 
-// ==========================================
-// 11. RÉCUPÉRER LES COMMANDES D'UN FOURNISSEUR
-// ==========================================
+
 exports.getSupplierOrders = async (req, res, next) => {
   try {
     const orders = await SupplierService.getOrders(req.params.id);
