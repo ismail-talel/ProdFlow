@@ -22,7 +22,7 @@ const mapProductPayload = (data = {}) => {
     payload.unitPrice = payload.priceHT;
   }
 
-  // Évite les CastError ObjectId avec chaînes vides du front
+ 
   if (payload.category === '' || payload.category === null) {
     delete payload.category;
   }
@@ -30,7 +30,7 @@ const mapProductPayload = (data = {}) => {
     delete payload.supplier;
   }
 
-  // Nettoyage des champs purement UI
+
   delete payload._id;
 
   return payload;
