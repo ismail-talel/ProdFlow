@@ -1,14 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
-// ============================================
-// MIDDLEWARES
-// ============================================
+
 const { auth, admin, productManage, orderCreate, orderConfirmModify, reception, expedition, superAdmin } = require('../middlewares/auth');
 
-// ============================================
-// CONTROLLERS
-// ============================================
+
 const user = require('../controllers/userController');
 const order = require('../controllers/orderController');
 const product = require('../controllers/productController');
@@ -20,29 +16,21 @@ const print = require('../controllers/printController');
 const search = require('../controllers/searchController');
 const company = require('../controllers/companyController');
 
-// ============================================
-// 1. AUTH & PROFIL
-// ============================================
-// Inscription publique désactivée : création de comptes réservée au super admin (POST /users)
+
 router.post('/auth/register', auth, superAdmin, user.register);
 router.post('/auth/login', user.login);
 router.get('/profile', auth, user.getProfile);
 router.put('/profile', auth, user.updateProfile);
 router.put('/profile/password', auth, user.changePassword);
 
-// ============================================
-// 2. UTILISATEURS
-// ============================================
+
 router.get('/users', auth, superAdmin, user.getUsers);
 router.get('/users/:id', auth, superAdmin, user.getUserById);
 router.put('/users/:id', auth, superAdmin, user.updateUser);
 router.post('/users', auth, superAdmin, user.createUser);
 router.delete('/users/:id', auth, superAdmin, user.deleteUser);
 
-// ============================================
-// 3. BONS DE COMMANDE
-// ============================================
-// Historique global (avant /:id pour éviter les conflits)
+
 router.get('/orders/history', auth, order.getGlobalOrderHistory);
 
 router.get('/orders', auth, order.getOrders);
@@ -51,22 +39,20 @@ router.get('/orders/:id/history', auth, order.getOrderHistory);
 router.get('/orders/:id/history/export', auth, order.exportOrderHistory);
 router.put('/orders/:id/history/:historyId', auth, orderConfirmModify, order.updateOrderHistory);
 
-// Création : responsable magasin OU responsable réception
+
 router.post('/orders', auth, orderCreate, order.createOrder);
 
-// Modification / confirmation
+
 router.put('/orders/:id', auth, orderConfirmModify, order.modifyOrder);
 router.put('/orders/:id/verify', auth, orderConfirmModify, order.verifyOrder);
 router.put('/orders/:id/confirm', auth, orderConfirmModify, order.confirmOrder);
 
-// Réception / expédition / annulation
+
 router.put('/orders/:id/receive', auth, reception, order.receiveOrder);
 router.put('/orders/:id/expedite', auth, expedition, order.expediteOrder);
 router.delete('/orders/:id', auth, admin, order.deleteOrder);
 
-// ============================================
-// 4. PRODUITS
-// ============================================
+
 router.get('/products', auth, product.getProducts);
 router.get('/products/search', auth, product.searchProducts);
 router.get('/products/low-stock', auth, product.getLowStockProducts);
@@ -76,18 +62,14 @@ router.put('/products/:id', auth, productManage, product.updateProduct);
 router.patch('/products/:id/stock', auth, productManage, product.updateStock);
 router.delete('/products/:id', auth, productManage, product.deleteProduct);
 
-// ============================================
-// 5. FOURNISSEURS
-// ============================================
+
 router.get('/suppliers', auth, supplier.getSuppliers);
 router.get('/suppliers/:id', auth, supplier.getSupplierById);
 router.post('/suppliers', auth, admin, supplier.createSupplier);
 router.put('/suppliers/:id', auth, admin, supplier.updateSupplier);
 router.delete('/suppliers/:id', auth, admin, supplier.deleteSupplier);
 
-// ============================================
-// 5bis. SOCIÉTÉ UNIQUE (infos app → bons de commande)
-// ============================================
+
 router.get('/company', auth, company.getActiveCompany);
 router.put('/company', auth, superAdmin, company.updateActiveCompany);
 router.post('/company/logo', auth, superAdmin, company.uploadLogoMiddleware, company.uploadActiveLogo);
@@ -99,18 +81,14 @@ router.put('/companies/:id', auth, superAdmin, company.updateCompany);
 router.post('/companies/:id/logo', auth, superAdmin, company.uploadLogoMiddleware, company.uploadCompanyLogo);
 router.delete('/companies/:id', auth, superAdmin, company.deleteCompany);
 
-// ============================================
-// 6. CATÉGORIES
-// ============================================
+
 router.get('/categories', auth, category.getCategories);
 router.get('/categories/:id', auth, category.getCategoryById);
 router.post('/categories', auth, admin, category.createCategory);
 router.put('/categories/:id', auth, admin, category.updateCategory);
 router.delete('/categories/:id', auth, admin, category.deleteCategory);
 
-// ============================================
-// 7. DASHBOARD & RAPPORTS
-// ============================================
+
 router.get('/dashboard', auth, dashboard.getDashboard);
 router.get('/dashboard/stats', auth, dashboard.getStats);
 router.get('/reports/orders', auth, admin, report.getOrderReport);
@@ -118,9 +96,7 @@ router.get('/reports/stock', auth, admin, report.getStockReport);
 router.get('/reports/suppliers', auth, admin, report.getSupplierReport);
 router.get('/reports/users', auth, superAdmin, report.getUserReport);
 
-// ============================================
-// 8. IMPRESSION PDF
-// ============================================
+
 router.get('/print-settings', auth, print.getSettings);
 router.put('/print-settings', auth, admin, print.updateSettings);
 router.post(
@@ -133,9 +109,7 @@ router.post(
 router.get('/orders/:id/print', auth, print.printOrder);
 router.get('/orders/:id/download', auth, print.downloadPDF);
 
-// ============================================
-// 9. RECHERCHE & SANTÉ
-// ============================================
+
 router.get('/search', auth, search.globalSearch);
 router.get('/health', (req, res) => res.json({ 
   success: true, 
@@ -143,9 +117,7 @@ router.get('/health', (req, res) => res.json({
   timestamp: new Date() 
 }));
 
-// ============================================
-// 10. 404
-// ============================================
+
 router.all('/{*splat}', (req, res) => {
   res.status(404).json({ 
     success: false, 
@@ -153,7 +125,5 @@ router.all('/{*splat}', (req, res) => {
   });
 });
 
-// ============================================
-// EXPORT
-// ============================================
+
 module.exports = router;
