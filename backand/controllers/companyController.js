@@ -36,7 +36,7 @@ exports.uploadLogoMiddleware = (req, res, next) => {
   });
 };
 
-/** GET /company — société active (celle utilisée par l'app / BC) */
+
 exports.getActiveCompany = async (req, res, next) => {
   try {
     const company = await CompanyService.getActive();
@@ -46,7 +46,7 @@ exports.getActiveCompany = async (req, res, next) => {
   }
 };
 
-/** GET /companies — liste */
+
 exports.getCompanies = async (req, res, next) => {
   try {
     const companies = await CompanyService.findAll();
@@ -56,7 +56,7 @@ exports.getCompanies = async (req, res, next) => {
   }
 };
 
-/** GET /companies/:id */
+
 exports.getCompanyById = async (req, res, next) => {
   try {
     const company = await CompanyService.findById(req.params.id);
@@ -66,7 +66,7 @@ exports.getCompanyById = async (req, res, next) => {
   }
 };
 
-/** POST /companies */
+
 exports.createCompany = async (req, res, next) => {
   try {
     const company = await CompanyService.create(req.body, req.user);
@@ -80,7 +80,7 @@ exports.createCompany = async (req, res, next) => {
   }
 };
 
-/** PUT /company — mise à jour de la société active */
+
 exports.updateActiveCompany = async (req, res, next) => {
   try {
     const company = await CompanyService.updateActive(req.body, req.user);
@@ -94,7 +94,7 @@ exports.updateActiveCompany = async (req, res, next) => {
   }
 };
 
-/** PUT /companies/:id */
+
 exports.updateCompany = async (req, res, next) => {
   try {
     const company = await CompanyService.update(req.params.id, req.body, req.user);
@@ -108,7 +108,7 @@ exports.updateCompany = async (req, res, next) => {
   }
 };
 
-/** POST /company/logo — logo de la société active */
+
 exports.uploadActiveLogo = async (req, res, next) => {
   try {
     if (!req.file) {
@@ -142,7 +142,7 @@ exports.uploadActiveLogo = async (req, res, next) => {
   }
 };
 
-/** POST /companies/:id/logo */
+
 exports.uploadCompanyLogo = async (req, res, next) => {
   try {
     if (!req.file) {
@@ -173,7 +173,7 @@ exports.uploadCompanyLogo = async (req, res, next) => {
   }
 };
 
-/** DELETE /companies/:id — désactivé en mode mono-société */
+
 exports.deleteCompany = async (req, res, next) => {
   try {
     await CompanyService.delete(req.params.id);
