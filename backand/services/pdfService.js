@@ -7,9 +7,7 @@ const { Order, PrintSettings } = require('../models');
 const CompanyService = require('./companyService');
 
 class PDFService {
-  // ==========================================
-  // GÉNÉRER LE PDF DU BON DE COMMANDE
-  // ==========================================
+  
   static async generateOrderPDF(orderId, options = {}) {
     try {
       const order = await Order.findById(orderId)
@@ -106,9 +104,7 @@ class PDFService {
     };
   }
 
-  // ==========================================
-  // RÉSOLUTION DU LOGO SOCIÉTÉ
-  // ==========================================
+
   static async resolveLogo(logo) {
     if (!logo || typeof logo !== 'string') return null;
 
@@ -172,9 +168,7 @@ class PDFService {
     });
   }
 
-  // ==========================================
-  // EN-TÊTE PROFESSIONNEL + LOGO
-  // ==========================================
+
   static async drawHeader(doc, settings, order, logoSource, colors, fonts, fontSize, currency) {
     const company = settings.company || {};
     const pageWidth = doc.page.width;
@@ -233,7 +227,6 @@ class PDFService {
       infoY += 11;
     });
 
-    // Bloc titre document
     const titleBoxW = 196;
     const titleBoxH = 86;
     const titleBoxX = right - titleBoxW;
@@ -291,9 +284,7 @@ class PDFService {
     return headerBottom + 14;
   }
 
-  // ==========================================
-  // BLOCS SOCIÉTÉ / FOURNISSEUR
-  // ==========================================
+ 
   static drawParties(doc, settings, order, startY, colors, fonts, fontSize) {
     const left = 42;
     const pageInner = doc.page.width - 84;
@@ -648,9 +639,6 @@ class PDFService {
     return y + boxH + 14;
   }
 
-  // ==========================================
-  // SIGNATURES
-  // ==========================================
   static drawSignatures(doc, settings, order, startY, colors, fonts, fontSize) {
     let y = startY;
     if (y > doc.page.height - 130) {
@@ -753,9 +741,7 @@ class PDFService {
     }
   }
 
-  // ==========================================
-  // PARAMÈTRES D'IMPRESSION + SOCIÉTÉ ACTIVE
-  // ==========================================
+
   static async getPrintSettings() {
     const [{ company: companyInfo, defaultTerms }, printSettings] = await Promise.all([
       CompanyService.getPrintPayload(),
@@ -786,7 +772,7 @@ class PDFService {
       });
     }
 
-    // Toujours prioriser l'entité Société pour le contenu du BC
+   
     settings.company = {
       ...(settings.company?.toObject?.() || settings.company || {}),
       ...companyInfo
@@ -800,9 +786,7 @@ class PDFService {
     return settings;
   }
 
-  // ==========================================
-  // UTILITAIRES
-  // ==========================================
+
   static getFontStyles(fontFamily = 'Helvetica') {
     const normalized = String(fontFamily || 'Helvetica').toLowerCase().trim();
     if (normalized.includes('times') || normalized.includes('georgia')) {
@@ -900,7 +884,7 @@ class PDFService {
     };
 
     const euro = Math.floor(Math.abs(number));
-    const cents = Math.round((Math.abs(number) - euro) * 1000); // millimes pour DT
+    const cents = Math.round((Math.abs(number) - euro) * 1000); 
     let words = convert(euro);
 
     if (cents > 0) {
