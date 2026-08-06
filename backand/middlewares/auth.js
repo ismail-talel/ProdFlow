@@ -38,10 +38,10 @@ const authorize = (...roles) => {
   };
 };
 
-// Admin général (gestion fournisseurs, users, catégories...)
+
 const admin = authorize(UserRoles.SUPER_ADMIN, UserRoles.ADMIN_MAGASIN);
 
-// Gestion complète des produits (admin + réception + expédition)
+
 const productManage = authorize(
   UserRoles.SUPER_ADMIN,
   UserRoles.ADMIN_MAGASIN,
@@ -49,14 +49,14 @@ const productManage = authorize(
   UserRoles.EXPEDITION_MAGASIN
 );
 
-// Création BC : responsable magasin OU responsable réception
+
 const orderCreate = authorize(
   UserRoles.SUPER_ADMIN,
   UserRoles.ADMIN_MAGASIN,
   UserRoles.RESPONSABLE_RECEPTION
 );
 
-// Confirmation / modification BC : réception, expédition ou admin magasin
+
 const orderConfirmModify = authorize(
   UserRoles.SUPER_ADMIN,
   UserRoles.ADMIN_MAGASIN,
@@ -64,14 +64,14 @@ const orderConfirmModify = authorize(
   UserRoles.EXPEDITION_MAGASIN
 );
 
-// Réception marchandises
+
 const reception = authorize(
   UserRoles.SUPER_ADMIN,
   UserRoles.ADMIN_MAGASIN,
   UserRoles.RESPONSABLE_RECEPTION
 );
 
-// Expédition
+
 const expedition = authorize(
   UserRoles.SUPER_ADMIN,
   UserRoles.ADMIN_MAGASIN,
