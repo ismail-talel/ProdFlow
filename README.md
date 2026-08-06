@@ -36,14 +36,14 @@ Stack :
 
 ### 1. Backend
 
-```bash
+``
 cd backand
 npm install
 ``
 
 Démarrez l’API :
 
-```bash
+``
 npm run dev
 # ou
 npm start
