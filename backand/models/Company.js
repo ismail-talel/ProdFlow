@@ -1,11 +1,8 @@
 const mongoose = require('mongoose');
 
-/**
- * Entité Société — informations de l'entreprise utilisatrice de l'application.
- * Ces données alimentent les bons de commande, PDF et documents officiels.
- */
+
 const companySchema = new mongoose.Schema({
-  // ========== IDENTITÉ ==========
+
   name: {
     type: String,
     required: [true, 'Le nom de la société est obligatoire'],
@@ -21,7 +18,6 @@ const companySchema = new mongoose.Schema({
     default: 'SARL'
   },
 
-  // ========== IDENTIFIANTS LÉGAUX ==========
   matricule: {
     type: String,
     trim: true,
@@ -42,7 +38,7 @@ const companySchema = new mongoose.Schema({
     uppercase: true
   },
 
-  // ========== CONTACT ==========
+ 
   email: {
     type: String,
     lowercase: true,
@@ -66,7 +62,7 @@ const companySchema = new mongoose.Schema({
     trim: true
   },
 
-  // ========== ADRESSE ==========
+
   address: {
     type: String,
     trim: true
@@ -90,7 +86,7 @@ const companySchema = new mongoose.Schema({
     default: 'Tunisie'
   },
 
-  // ========== LOGO & VISUEL ==========
+
   logo: {
     type: String,
     trim: true,
@@ -109,7 +105,7 @@ const companySchema = new mongoose.Schema({
     max: 200
   },
 
-  // ========== FINANCIER ==========
+
   currency: {
     type: String,
     trim: true,
@@ -134,7 +130,7 @@ const companySchema = new mongoose.Schema({
     trim: true
   },
 
-  // ========== CONDITIONS PAR DÉFAUT (BC) ==========
+
   defaultPaymentTerms: {
     type: String,
     trim: true,
@@ -156,7 +152,7 @@ const companySchema = new mongoose.Schema({
     default: 'Merci de confirmer la réception de ce bon de commande.'
   },
 
-  // ========== STATUT ==========
+ 
   isActive: {
     type: Boolean,
     default: true
@@ -209,7 +205,7 @@ companySchema.pre('save', async function (next) {
   next();
 });
 
-// Format prêt pour le PDF / PrintSettings
+
 companySchema.methods.toPrintCompany = function () {
   return {
     name: this.name,
