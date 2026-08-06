@@ -118,7 +118,7 @@ exports.uploadCompanyLogo = async (req, res, next) => {
     settings.updatedBy = req.user._id;
     await settings.save();
 
-    // Synchroniser aussi l'entité Société
+    
     try {
       const CompanyService = require('../services/companyService');
       await CompanyService.setActiveLogo(
@@ -130,7 +130,7 @@ exports.uploadCompanyLogo = async (req, res, next) => {
         req.user
       );
     } catch (_) {
-      /* ignore sync errors */
+      
     }
 
     res.json({
@@ -206,7 +206,7 @@ exports.downloadPDF = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Commande non trouvée' });
     }
 
-    // Régénérer si absent
+    
     if (!order.pdfPath || !fs.existsSync(order.pdfPath)) {
       const result = await PDFService.generateOrderPDF(req.params.id);
       order.pdfPath = result.filePath;
