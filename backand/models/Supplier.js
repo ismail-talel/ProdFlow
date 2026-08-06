@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 
 const supplierSchema = new mongoose.Schema({
-  // ========== IDENTIFICATION ==========
+ 
   reference: {
     type: String,
     unique: true,
     uppercase: true,
     trim: true
   },
-  // Conservé pour compatibilité avec les anciennes données
+  
   code: {
     type: String,
     uppercase: true,
@@ -31,7 +31,7 @@ const supplierSchema = new mongoose.Schema({
     uppercase: true
   },
 
-  // ========== LOCALISATION ==========
+ 
   country: {
     type: String,
     trim: true,
@@ -46,7 +46,7 @@ const supplierSchema = new mongoose.Schema({
     default: 'local'
   },
 
-  // ========== CONTACT ==========
+
   email: {
     type: String,
     lowercase: true,
@@ -62,18 +62,18 @@ const supplierSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  // Conservé pour compatibilité
+  
   phone: {
     type: String,
     trim: true
   },
 
-  // ========== ADRESSE ==========
+  
   address: {
     type: mongoose.Schema.Types.Mixed
   },
 
-  // ========== PAIEMENT & LIVRAISON ==========
+ 
   paymentType: {
     type: String,
     trim: true,
@@ -84,13 +84,13 @@ const supplierSchema = new mongoose.Schema({
     trim: true
   },
 
-  // ========== LOGO ==========
+
   companyLogo: {
     type: String,
     trim: true
   },
 
-  // ========== STATUT ==========
+ 
   isActive: {
     type: Boolean,
     default: true
