@@ -7,7 +7,7 @@ class CompanyService {
     return await Company.getOrCreateDefault();
   }
 
-  /** Une seule société : retourne [société] pour compatibilité */
+ 
   static async findAll() {
     const company = await this.getActive();
     return company ? [company] : [];
@@ -23,10 +23,7 @@ class CompanyService {
     return company;
   }
 
-  /**
-   * Création interdite si une société existe déjà.
-   * En mode mono-société, préférer updateActive().
-   */
+ 
   static async create(data, user) {
     const existingCount = await Company.countDocuments();
     if (existingCount > 0) {
@@ -70,7 +67,7 @@ class CompanyService {
       }
     }
 
-    // Toujours unique et active pour l'app
+   
     company.isDefault = true;
     if (company.isActive === false) {
       company.isActive = true;
@@ -79,7 +76,7 @@ class CompanyService {
     company.updatedBy = user?._id;
     await company.save();
 
-    // Nettoyage : désactive / retire le statut défaut des éventuels doublons
+   
     await Company.updateMany(
       { _id: { $ne: company._id } },
       { $set: { isDefault: false, isActive: false } }
@@ -114,7 +111,7 @@ class CompanyService {
     throw error;
   }
 
-  /** Données formatées pour le PDF bon de commande */
+ 
   static async getPrintPayload() {
     const company = await Company.getOrCreateDefault();
     return {
