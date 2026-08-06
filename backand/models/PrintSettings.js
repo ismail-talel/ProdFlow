@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
-// ========================================
-// 1. SOUS-SCHEMAS (ORGANISÉS)
-// ========================================
 
-// 1.1 INFORMATIONS DE L'ENTREPRISE
 const CompanyInfoSchema = new mongoose.Schema({
   name: { 
     type: String, 
@@ -547,41 +543,39 @@ const TermsSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
-// ========================================
-// 2. SCHÉMA PRINCIPAL
-// ========================================
+
 const printSettingsSchema = new mongoose.Schema({
-  // Informations de l'entreprise
+ 
   company: {
     type: CompanyInfoSchema,
     default: () => ({})
   },
 
-  // Paramètres d'impression
+
   printOptions: {
     type: PrintOptionsSchema,
     default: () => ({})
   },
 
-  // Mise en page
+ 
   layout: {
     type: LayoutSchema,
     default: () => ({})
   },
 
-  // Textes personnalisés
+
   customTexts: {
     type: CustomTextsSchema,
     default: () => ({})
   },
 
-  // Conditions générales
+
   defaultTerms: {
     type: TermsSchema,
     default: () => ({})
   },
 
-  // Métadonnées
+
   metadata: {
     createdBy: { 
       type: mongoose.Schema.Types.ObjectId, 
@@ -616,9 +610,6 @@ const printSettingsSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// ========================================
-// 3. INDEXES
-// ========================================
 printSettingsSchema.index({ 'company.name': 1 });
 printSettingsSchema.index({ 'metadata.isDefault': 1 });
 printSettingsSchema.index({ 'metadata.isActive': 1 });
@@ -779,12 +770,12 @@ printSettingsSchema.statics = {
     );
   },
 
-  // Recherche par tags
+
   async findByTag(tag) {
     return this.find({ 'metadata.tags': tag });
   },
 
-  // Recherche par entreprise
+ 
   async findByCompany(companyName) {
     return this.find({ 
       'company.name': { $regex: companyName, $options: 'i' } 
@@ -797,11 +788,9 @@ printSettingsSchema.statics = {
   }
 };
 
-// ========================================
-// 7. MIDDLEWARE (PRE/SAVE)
-// ========================================
+
 printSettingsSchema.pre('save', async function(next) {
-  // S'assurer qu'il n'y a qu'un seul paramètre par défaut
+ 
   if (this.metadata.isDefault) {
     await this.constructor.updateMany(
       { 
@@ -812,12 +801,11 @@ printSettingsSchema.pre('save', async function(next) {
     );
   }
   
-  // Incrémenter la version si ce n'est pas un nouveau document
   if (!this.isNew) {
     this.metadata.version = (this.metadata.version || 0) + 1;
   }
   
-  // Valider le logo
+
   if (this.printOptions.showLogo && !this.company.logo) {
     this.printOptions.showLogo = false;
   }
@@ -825,12 +813,8 @@ printSettingsSchema.pre('save', async function(next) {
   next();
 });
 
-// ========================================
-// 8. MODEL
-// ========================================
+
 const PrintSettings = mongoose.model('PrintSettings', printSettingsSchema);
 
-// ========================================
-// 9. EXPORT
-// ========================================
+
 module.exports = PrintSettings;
