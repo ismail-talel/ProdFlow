@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-  // ========== IDENTIFICATION ==========
+ 
   reference: {
     type: String,
     required: [true, 'La référence produit est obligatoire'],
@@ -20,7 +20,7 @@ const productSchema = new mongoose.Schema({
     required: [true, 'La désignation produit est obligatoire'],
     trim: true
   },
-  // Conservé pour compatibilité avec les anciennes données
+
   name: {
     type: String,
     trim: true
@@ -31,7 +31,7 @@ const productSchema = new mongoose.Schema({
     default: ''
   },
 
-  // ========== FOURNISSEUR ==========
+
   supplier: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Supplier'
@@ -42,7 +42,7 @@ const productSchema = new mongoose.Schema({
     uppercase: true
   },
 
-  // ========== PRIX & TAXES ==========
+ 
   unitOfMeasure: {
     type: String,
     trim: true,
@@ -53,7 +53,7 @@ const productSchema = new mongoose.Schema({
     required: [true, 'Le prix HT est obligatoire'],
     min: [0, 'Le prix HT doit être positif']
   },
-  // Conservé pour compatibilité avec les anciennes données / commandes
+  
   unitPrice: {
     type: Number,
     min: 0
@@ -80,13 +80,13 @@ const productSchema = new mongoose.Schema({
     min: 0
   },
 
-  // ========== IMAGE ==========
+
   image: {
     type: String,
     trim: true
   },
 
-  // ========== DIMENSIONS ==========
+
   width: { type: Number, min: 0 },
   length: { type: Number, min: 0 },
   height: { type: Number, min: 0 },
@@ -94,7 +94,7 @@ const productSchema = new mongoose.Schema({
   diameter: { type: Number, min: 0 },
   weight: { type: Number, min: 0 },
 
-  // ========== CARACTÉRISTIQUES ==========
+  
   color: {
     type: String,
     trim: true
@@ -120,7 +120,7 @@ const productSchema = new mongoose.Schema({
     default: 'local'
   },
 
-  // ========== STOCK & CATÉGORIE ==========
+  
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category'
