@@ -31,7 +31,7 @@ exports.getOrderById = async (req, res, next) => {
   }
 };
 
-// Modification complète (réception / expédition)
+
 exports.modifyOrder = async (req, res, next) => {
   try {
     const { commentaire, ...data } = req.body;
@@ -51,7 +51,6 @@ exports.modifyOrder = async (req, res, next) => {
   }
 };
 
-// Corrections ciblées (compat)
 exports.verifyOrder = async (req, res, next) => {
   try {
     const { corrections = [], commentaire } = req.body;
