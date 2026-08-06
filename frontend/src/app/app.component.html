@@ -1,0 +1,77 @@
+<!-- Interface connectée -->
+<div *ngIf="currentUser" class="app-layout" [class.nav-open]="menuOpen">
+  <header class="top-navbar">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <img class="brand-logo" src="brand/prodflow-logo.png" width="36" height="36" alt="ProdFlow" />
+        <div class="brand-text">
+          <span class="brand-name">ProdFlow</span>
+          <span class="brand-tagline">Ops & production</span>
+        </div>
+      </div>
+
+      <button class="btn-icon nav-burger" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen" aria-label="Menu">
+        <span class="material-icons-outlined">{{ menuOpen ? 'close' : 'menu' }}</span>
+      </button>
+
+      <nav class="top-nav" [class.is-open]="menuOpen">
+        <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Tableau de bord</a>
+        <a routerLink="/products" routerLinkActive="active" (click)="closeMenu()">Produits</a>
+        <a routerLink="/orders" routerLinkActive="active" (click)="closeMenu()">Commandes</a>
+        <a *ngIf="authService.hasRole(['admin_magasin', 'super_admin'])" routerLink="/categories" routerLinkActive="active" (click)="closeMenu()">Catégories</a>
+        <a *ngIf="authService.hasRole(['admin_magasin', 'super_admin'])" routerLink="/suppliers" routerLinkActive="active" (click)="closeMenu()">Fournisseurs</a>
+        <a *ngIf="authService.hasRole(['super_admin'])" routerLink="/companies" routerLinkActive="active" (click)="closeMenu()">Société</a>
+        <a *ngIf="authService.hasRole(['super_admin'])" routerLink="/users" routerLinkActive="active" (click)="closeMenu()">Utilisateurs</a>
+        <a routerLink="/profile" routerLinkActive="active" (click)="closeMenu()">Paramètres</a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="nav-user">
+          <div class="user-avatar" [title]="currentUser.firstName + ' ' + currentUser.lastName">
+            {{ getUserInitials() }}
+          </div>
+          <div class="user-meta">
+            <span class="user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
+            <span class="user-role">{{ getRoleLabel(currentUser.role) }}</span>
+          </div>
+          <button class="btn-icon logout-btn" (click)="onLogout()" title="Déconnexion">
+            <span class="material-icons-outlined">logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="nav-backdrop" (click)="closeMenu()"></div>
+
+  <div class="main-container">
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+
+<div *ngIf="!currentUser" class="auth-layout">
+  <router-outlet></router-outlet>
+</div>
+
+<div class="toast-container">
+  <div
+    *ngFor="let toast of toasts"
+    class="toast"
+    [class.toast-success]="toast.type === 'success'"
+    [class.toast-danger]="toast.type === 'danger'"
+    [class.toast-warning]="toast.type === 'warning'"
+    [class.toast-info]="toast.type === 'info'"
+  >
+    <span class="material-icons-outlined">
+      {{ toast.type === 'success' ? 'check_circle' :
+         toast.type === 'danger' ? 'error' :
+         toast.type === 'warning' ? 'warning' : 'info' }}
+    </span>
+    <span>{{ toast.message }}</span>
+    <button class="btn-icon" style="padding: 0.15rem;" (click)="toastService.remove(toast.id)">
+      <span class="material-icons-outlined" style="font-size: 1.1rem;">close</span>
+    </button>
+  </div>
+</div>

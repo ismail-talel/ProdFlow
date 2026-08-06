@@ -1,0 +1,57 @@
+.register-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.75rem;
+  position: relative;
+  background:
+    radial-gradient(ellipse 50% 40% at 10% 10%, rgba(37, 99, 235, 0.12), transparent 55%),
+    radial-gradient(ellipse 40% 35% at 90% 80%, rgba(2, 132, 199, 0.1), transparent 50%),
+    var(--surface-app);
+}
+
+.register-card {
+  width: 100%;
+  max-width: 560px;
+  padding: 2.1rem 2.2rem;
+  border-radius: 20px;
+  animation: fade-up 0.5s ease both;
+}
+
+.register-header {
+  margin-bottom: 1.5rem;
+}
+
+.register-header .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--brand);
+  margin-bottom: 0.85rem;
+}
+
+.register-header .brand img {
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.register-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  margin-bottom: 0.3rem;
+}
+
+.register-header p {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+.register-footer {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}

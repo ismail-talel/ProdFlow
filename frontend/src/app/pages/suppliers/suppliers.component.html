@@ -1,0 +1,163 @@
+    <div class="suppliers-container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="m-0">Fournisseurs</h2>
+          <p class="text-muted m-0" style="font-size: 0.9rem;">Gérez vos fournisseurs partenaires et contacts</p>
+        </div>
+        <button class="btn btn-primary" (click)="openModal()">
+          <span class="material-icons-round">add</span>
+          <span>Nouveau Fournisseur</span>
+        </button>
+      </div>
+
+      <!-- Table des fournisseurs -->
+      <div *ngIf="loading" class="loading-state">
+        <span class="spinner">Chargement des fournisseurs...</span>
+      </div>
+
+      <div *ngIf="!loading && suppliers.length === 0" class="empty-state">
+        <p>Aucun fournisseur configuré.</p>
+      </div>
+
+      <div *ngIf="!loading && suppliers.length > 0" class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Code / Nom</th>
+              <th>Email</th>
+              <th>Téléphone / Portable</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let sup of suppliers">
+              <td>
+                <div class="font-semibold">{{ sup.name || sup.designation }}</div>
+                <span class="badge badge-info" style="font-size: 0.65rem;">{{ sup.code || sup.reference }}</span>
+              </td>
+              <td>{{ sup.email || 'Non spécifié' }}</td>
+              <td>
+                <div>Tél: {{ sup.phone || sup.phone1 }}</div>
+                <div *ngIf="sup.mobile || sup.phone2" class="text-secondary" style="font-size: 0.8rem;">Port: {{ sup.mobile || sup.phone2 }}</div>
+              </td>
+              <td class="text-secondary">{{ sup.description || sup.notes || 'Aucune' }}</td>
+              <td>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-secondary btn-icon" title="Modifier" (click)="openModal(sup)">
+                    <span class="material-icons-round">edit</span>
+                  </button>
+                  <button class="btn btn-secondary btn-icon btn-danger-hover" title="Supprimer" (click)="onDelete(sup._id)">
+                    <span class="material-icons-round">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modale Création / Édition -->
+      <div *ngIf="modalOpen" class="modal-backdrop">
+        <div class="modal-container" style="max-width: 600px;">
+          <div class="modal-header">
+            <h3 class="modal-title">{{ isEdit ? 'Modifier le fournisseur' : 'Créer un fournisseur' }}</h3>
+            <button class="btn-icon" (click)="closeModal()">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+          
+          <form (ngSubmit)="onSubmit()" #supplierForm="ngForm">
+            <div class="modal-body">
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="code">Code Fournisseur (Unique)</label>
+                  <input 
+                    type="text" 
+                    id="code" 
+                    name="code" 
+                    [(ngModel)]="currentSupplier.code" 
+                    required 
+                    class="form-input" 
+                    placeholder="EX: FOURN-A"
+                    [disabled]="isEdit"
+                    style="text-transform: uppercase;"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="name">Raison Sociale / Nom</label>
+                  <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    [(ngModel)]="currentSupplier.name" 
+                    required 
+                    class="form-input" 
+                    placeholder="Fourniture & Co"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="email">Adresse Email</label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  name="email" 
+                  [(ngModel)]="currentSupplier.email" 
+                  class="form-input" 
+                  placeholder="contact@fournisseur.com"
+                />
+              </div>
+
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="phone">Téléphone fixe</label>
+                  <input 
+                    type="text" 
+                    id="phone" 
+                    name="phone" 
+                    [(ngModel)]="currentSupplier.phone" 
+                    required 
+                    class="form-input" 
+                    placeholder="0102030405"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="mobile">Téléphone Portable</label>
+                  <input 
+                    type="text" 
+                    id="mobile" 
+                    name="mobile" 
+                    [(ngModel)]="currentSupplier.mobile" 
+                    class="form-input" 
+                    placeholder="0607080910"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="description">Description</label>
+                <textarea 
+                  id="description" 
+                  name="description" 
+                  [(ngModel)]="currentSupplier.description" 
+                  class="form-input" 
+                  rows="3"
+                  placeholder="Produits fournis, conditions de livraison, etc..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+              <button type="submit" [disabled]="supplierForm.invalid || saving" class="btn btn-primary">
+                {{ isEdit ? 'Enregistrer' : 'Créer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>

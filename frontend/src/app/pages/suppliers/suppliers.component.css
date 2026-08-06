@@ -1,0 +1,26 @@
+    .suppliers-container {
+      width: 100%;
+    }
+    .loading-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+    .btn-danger-hover:hover {
+      background-color: var(--color-danger-light) !important;
+      color: var(--color-danger) !important;
+      border-color: transparent !important;
+    }
+    .spinner {
+      display: inline-block;
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }

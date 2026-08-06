@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ProdFlow">
+  <rect width="64" height="64" rx="14" fill="#0b1b3a"/>
+  <path fill="#ffffff" fill-rule="evenodd" d="M14 12h24c7.7 0 14 6.3 14 14v2c0 7.7-6.3 14-14 14H28v10h20v8H14V12zm14 8v14h10c5.5 0 10-4.5 10-10v-2c0-5.5-4.5-10-10-10H28z"/>
+  <path fill="#2563eb" d="M28 40h22c3.3 0 6 2.7 6 6v2c0 3.3-2.7 6-6 6H28V40z"/>
+  <rect x="28" y="46" width="22" height="5" rx="1" fill="#60a5fa"/>
+</svg>

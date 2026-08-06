@@ -1,0 +1,196 @@
+    <div class="users-container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="m-0">Utilisateurs</h2>
+          <p class="text-muted m-0" style="font-size: 0.9rem;">Gérez l'accès des collaborateurs et leurs rôles</p>
+        </div>
+        <button class="btn btn-primary" (click)="openModal()">
+          <span class="material-icons-round">person_add</span>
+          <span>Nouveau Collaborateur</span>
+        </button>
+      </div>
+
+      <!-- Table des utilisateurs -->
+      <div *ngIf="loading" class="loading-state">
+        <span class="spinner">Chargement des utilisateurs...</span>
+      </div>
+
+      <div *ngIf="!loading && users.length === 0" class="empty-state">
+        <p>Aucun utilisateur trouvé.</p>
+      </div>
+
+      <div *ngIf="!loading && users.length > 0" class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nom complet</th>
+              <th>Email</th>
+              <th>Téléphone</th>
+              <th>Rôle</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of users">
+              <td>
+                <div class="font-semibold">{{ u.firstName }} {{ u.lastName }}</div>
+              </td>
+              <td>{{ u.email }}</td>
+              <td>{{ u.phone }}</td>
+              <td>
+                <span class="badge" [class]="getRoleClass(u.role)">
+                  {{ getRoleLabel(u.role) }}
+                </span>
+              </td>
+              <td>
+                <span 
+                  class="badge" 
+                  [class.badge-success]="u.isActive" 
+                  [class.badge-danger]="!u.isActive"
+                >
+                  {{ u.isActive ? 'Actif' : 'Désactivé' }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-secondary btn-icon" title="Modifier" (click)="openModal(u)">
+                    <span class="material-icons-round">edit</span>
+                  </button>
+                  <button 
+                    *ngIf="u.role !== 'super_admin'"
+                    class="btn btn-secondary btn-icon btn-danger-hover" 
+                    title="Supprimer" 
+                    (click)="onDelete(u._id)"
+                  >
+                    <span class="material-icons-round">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modale Création / Édition -->
+      <div *ngIf="modalOpen" class="modal-backdrop">
+        <div class="modal-container" style="max-width: 600px;">
+          <div class="modal-header">
+            <h3 class="modal-title">{{ isEdit ? 'Modifier le collaborateur' : 'Créer un collaborateur' }}</h3>
+            <button class="btn-icon" (click)="closeModal()">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+          
+          <form (ngSubmit)="onSubmit()" #userForm="ngForm">
+            <div class="modal-body">
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="firstName">Prénom</label>
+                  <input 
+                    type="text" 
+                    id="firstName" 
+                    name="firstName" 
+                    [(ngModel)]="currentUser.firstName" 
+                    required 
+                    class="form-input" 
+                    placeholder="Jean"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="lastName">Nom</label>
+                  <input 
+                    type="text" 
+                    id="lastName" 
+                    name="lastName" 
+                    [(ngModel)]="currentUser.lastName" 
+                    required 
+                    class="form-input" 
+                    placeholder="Dupont"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="email">Adresse Email</label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  name="email" 
+                  [(ngModel)]="currentUser.email" 
+                  required 
+                  email
+                  class="form-input" 
+                  placeholder="jean.dupont@societe.com"
+                  [disabled]="isEdit"
+                />
+              </div>
+
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="phone">Téléphone</label>
+                  <input 
+                    type="text" 
+                    id="phone" 
+                    name="phone" 
+                    [(ngModel)]="currentUser.phone" 
+                    required 
+                    class="form-input" 
+                    placeholder="0612345678"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="role">Rôle / Service</label>
+                  <select 
+                    id="role" 
+                    name="role" 
+                    [(ngModel)]="currentUser.role" 
+                    required 
+                    class="form-input form-select"
+                  >
+                    <option value="super_admin">Super Administrateur</option>
+                    <option value="admin_magasin">Administrateur Magasin</option>
+                    <option value="responsable_reception">Responsable Réception</option>
+                    <option value="expedition_magasin">Expédition Magasin</option>
+                  </select>
+                </div>
+              </div>
+
+              <div *ngIf="!isEdit" class="form-group">
+                <label class="form-label" for="password">Mot de passe initial</label>
+                <input 
+                  type="password" 
+                  id="password" 
+                  name="password" 
+                  [(ngModel)]="currentUser.password" 
+                  required 
+                  minlength="6"
+                  class="form-input" 
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <div *ngIf="isEdit" class="form-group d-flex align-items-center gap-2" style="margin-top: 1rem;">
+                <input 
+                  type="checkbox" 
+                  id="isActive" 
+                  name="isActive" 
+                  [(ngModel)]="currentUser.isActive" 
+                  style="width: 18px; height: 18px; cursor: pointer;"
+                />
+                <label for="isActive" class="form-label mb-0" style="cursor: pointer;">Compte actif (autoriser les connexions)</label>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+              <button type="submit" [disabled]="userForm.invalid || saving" class="btn btn-primary">
+                {{ isEdit ? 'Enregistrer' : 'Créer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>

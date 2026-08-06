@@ -1,0 +1,405 @@
+    <div class="products-container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="m-0">Produits</h2>
+          <p class="text-muted m-0" style="font-size: 0.9rem;">Gérez le catalogue des produits et les niveaux de stock</p>
+        </div>
+        
+        <button 
+          *ngIf="canManageProducts" 
+          class="btn btn-primary" 
+          (click)="openModal()"
+        >
+          <span class="material-icons-round">add</span>
+          <span>Nouveau Produit</span>
+        </button>
+      </div>
+
+      <!-- Filtres de recherche -->
+      <div class="glass-card mb-4">
+        <div class="grid grid-3">
+          <div class="form-group mb-0">
+            <label class="form-label" for="searchQuery">Recherche</label>
+            <div class="search-input-wrapper">
+              <input 
+                type="text" 
+                id="searchQuery" 
+                [(ngModel)]="searchQuery" 
+                (ngModelChange)="onSearch()" 
+                class="form-input" 
+                placeholder="Réf, Nom du produit..."
+              />
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="filterCategory">Catégorie</label>
+            <select 
+              id="filterCategory" 
+              [(ngModel)]="filterCategory" 
+              (change)="loadProducts()" 
+              class="form-input form-select"
+            >
+              <option value="">Toutes les catégories</option>
+              <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="filterSupplier">Fournisseur</label>
+            <select 
+              id="filterSupplier" 
+              [(ngModel)]="filterSupplier" 
+              (change)="loadProducts()" 
+              class="form-input form-select"
+            >
+              <option value="">Tous les fournisseurs</option>
+              <option *ngFor="let sup of suppliers" [value]="sup._id">{{ sup.name || sup.designation }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table des Produits -->
+      <div *ngIf="loading" class="loading-state">
+        <span class="spinner">Chargement des produits...</span>
+      </div>
+
+      <div *ngIf="!loading && products.length === 0" class="empty-state">
+        <p>Aucun produit trouvé.</p>
+      </div>
+
+      <div *ngIf="!loading && products.length > 0" class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Nom</th>
+              <th>Catégorie</th>
+              <th>Fournisseur</th>
+              <th>Prix Unit.</th>
+              <th>Stock Actuel</th>
+              <th>Seuil Min</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let prod of products" [class.row-warning]="prod.quantity <= prod.minThreshold">
+              <td class="font-semibold">{{ prod.reference }}</td>
+              <td>
+                <div class="font-semibold">{{ displayName(prod) }}</div>
+                <div class="text-secondary" style="font-size: 0.8rem;">{{ prod.description || 'Pas de description' }}</div>
+              </td>
+              <td>{{ categoryName(prod) || 'Non spécifiée' }}</td>
+              <td>{{ supplierName(prod) || 'Non spécifié' }}</td>
+              <td class="font-semibold">{{ unitPriceOf(prod) | currency:'EUR':'symbol':'1.2-2':'fr' }}</td>
+              <td>
+                <span 
+                  class="font-semibold d-flex align-items-center gap-1"
+                  [class.text-danger]="prod.quantity <= prod.minThreshold"
+                  [class.text-success]="prod.quantity > prod.minThreshold"
+                >
+                  {{ prod.quantity }}
+                  <span *ngIf="prod.quantity <= prod.minThreshold" class="material-icons-round text-danger" style="font-size: 1.1rem;" title="Stock bas !">error</span>
+                </span>
+              </td>
+              <td>{{ prod.minThreshold }}</td>
+              <td>
+                <div class="d-flex gap-2">
+                  <button 
+                    *ngIf="canManageProducts"
+                    class="btn btn-secondary btn-icon" 
+                    title="Ajuster le stock"
+                    (click)="openStockModal(prod)"
+                  >
+                    <span class="material-icons-round">inventory_2</span>
+                  </button>
+                  <button 
+                    *ngIf="canManageProducts"
+                    class="btn btn-secondary btn-icon" 
+                    title="Modifier"
+                    (click)="openModal(prod)"
+                  >
+                    <span class="material-icons-round">edit</span>
+                  </button>
+                  <button 
+                    *ngIf="canManageProducts"
+                    class="btn btn-secondary btn-icon btn-danger-hover" 
+                    title="Supprimer"
+                    (click)="onDelete(prod._id)"
+                  >
+                    <span class="material-icons-round">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modale Création / Édition -->
+      <div *ngIf="modalOpen" class="modal-backdrop">
+        <div class="modal-container modal-xl">
+          <div class="modal-header">
+            <h3 class="modal-title">{{ isEdit ? 'Modifier le produit' : 'Créer un produit' }}</h3>
+            <button class="btn-icon" type="button" (click)="closeModal()">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+          
+          <form (ngSubmit)="onSubmit()" #productForm="ngForm">
+            <div class="modal-body product-form-body">
+
+              <section class="form-section">
+                <h4 class="form-section-title">Identification</h4>
+                <div class="grid grid-2">
+                  <div class="form-group">
+                    <label class="form-label" for="reference">Référence *</label>
+                    <input type="text" id="reference" name="reference" [(ngModel)]="currentProduct.reference" required class="form-input" placeholder="PROD-001" [disabled]="isEdit" style="text-transform: uppercase;" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="barcode">Code-barres</label>
+                    <input type="text" id="barcode" name="barcode" [(ngModel)]="currentProduct.barcode" class="form-input" placeholder="Optionnel" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="designation">Désignation *</label>
+                  <input type="text" id="designation" name="designation" [(ngModel)]="currentProduct.designation" required class="form-input" placeholder="Écrou hexagonal M8" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="description">Description</label>
+                  <textarea id="description" name="description" [(ngModel)]="currentProduct.description" class="form-input" rows="2" placeholder="Description détaillée du produit..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="image">URL image</label>
+                  <input type="text" id="image" name="image" [(ngModel)]="currentProduct.image" class="form-input" placeholder="https://… ou chemin relatif" />
+                </div>
+              </section>
+
+              <section class="form-section">
+                <h4 class="form-section-title">Fournisseur & catégorie</h4>
+                <div class="grid grid-2">
+                  <div class="form-group">
+                    <label class="form-label" for="category">Catégorie</label>
+                    <select id="category" name="category" [(ngModel)]="currentProduct.category" class="form-input form-select">
+                      <option value="">Sélectionner</option>
+                      <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="supplier">Fournisseur *</label>
+                    <select id="supplier" name="supplier" [(ngModel)]="currentProduct.supplier" required class="form-input form-select">
+                      <option value="">Sélectionner</option>
+                      <option *ngFor="let sup of suppliers" [value]="sup._id">{{ sup.name || sup.designation }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="grid grid-2">
+                  <div class="form-group">
+                    <label class="form-label" for="supplierReference">Réf. fournisseur</label>
+                    <input type="text" id="supplierReference" name="supplierReference" [(ngModel)]="currentProduct.supplierReference" class="form-input" style="text-transform: uppercase;" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="unitOfMeasure">Unité de mesure</label>
+                    <input type="text" id="unitOfMeasure" name="unitOfMeasure" [(ngModel)]="currentProduct.unitOfMeasure" class="form-input" placeholder="unité" />
+                  </div>
+                </div>
+              </section>
+
+              <section class="form-section">
+                <h4 class="form-section-title">Prix & taxes</h4>
+                <div class="grid grid-3">
+                  <div class="form-group">
+                    <label class="form-label" for="priceHT">Prix HT (€) *</label>
+                    <input type="number" id="priceHT" name="priceHT" [(ngModel)]="currentProduct.priceHT" required min="0" step="0.01" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="discount">Remise (%)</label>
+                    <input type="number" id="discount" name="discount" [(ngModel)]="currentProduct.discount" min="0" max="100" step="0.01" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="tva">TVA (%)</label>
+                    <input type="number" id="tva" name="tva" [(ngModel)]="currentProduct.tva" min="0" step="0.01" class="form-input" />
+                  </div>
+                </div>
+                <div class="grid grid-3">
+                  <div class="form-group">
+                    <label class="form-label" for="priceInCurrency">Prix devise</label>
+                    <input type="number" id="priceInCurrency" name="priceInCurrency" [(ngModel)]="currentProduct.priceInCurrency" min="0" step="0.01" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="margin">Marge</label>
+                    <input type="number" id="margin" name="margin" [(ngModel)]="currentProduct.margin" min="0" step="0.01" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Prix TTC (calculé)</label>
+                    <div class="form-input price-ttc-preview">{{ priceTTCPreview | currency:'EUR':'symbol':'1.2-2':'fr' }}</div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="form-section">
+                <h4 class="form-section-title">Dimensions</h4>
+                <div class="grid grid-3">
+                  <div class="form-group">
+                    <label class="form-label" for="width">Largeur</label>
+                    <input type="number" id="width" name="width" [(ngModel)]="currentProduct.width" min="0" step="0.01" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="length">Longueur</label>
+                    <input type="number" id="length" name="length" [(ngModel)]="currentProduct.length" min="0" step="0.01" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="height">Hauteur</label>
+                    <input type="number" id="height" name="height" [(ngModel)]="currentProduct.height" min="0" step="0.01" class="form-input" />
+                  </div>
+                </div>
+                <div class="grid grid-3">
+                  <div class="form-group">
+                    <label class="form-label" for="radius">Rayon</label>
+                    <input type="number" id="radius" name="radius" [(ngModel)]="currentProduct.radius" min="0" step="0.01" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="diameter">Diamètre</label>
+                    <input type="number" id="diameter" name="diameter" [(ngModel)]="currentProduct.diameter" min="0" step="0.01" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="weight">Poids</label>
+                    <input type="number" id="weight" name="weight" [(ngModel)]="currentProduct.weight" min="0" step="0.01" class="form-input" />
+                  </div>
+                </div>
+              </section>
+
+              <section class="form-section">
+                <h4 class="form-section-title">Caractéristiques</h4>
+                <div class="grid grid-2">
+                  <div class="form-group">
+                    <label class="form-label" for="color">Couleur</label>
+                    <input type="text" id="color" name="color" [(ngModel)]="currentProduct.color" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="materials">Matériaux</label>
+                    <input type="text" id="materials" name="materials" [(ngModel)]="currentProduct.materials" class="form-input" />
+                  </div>
+                </div>
+                <div class="grid grid-2">
+                  <div class="form-group">
+                    <label class="form-label" for="compositionType">Type de composition</label>
+                    <select id="compositionType" name="compositionType" [(ngModel)]="currentProduct.compositionType" class="form-input form-select">
+                      <option value="non_compose">Non composé</option>
+                      <option value="compose">Composé</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="originType">Origine</label>
+                    <select id="originType" name="originType" [(ngModel)]="currentProduct.originType" class="form-input form-select">
+                      <option value="local">Local</option>
+                      <option value="importe">Importé</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              <section class="form-section">
+                <h4 class="form-section-title">Stock</h4>
+                <div class="grid grid-3">
+                  <div class="form-group">
+                    <label class="form-label" for="quantity">Quantité *</label>
+                    <input type="number" id="quantity" name="quantity" [(ngModel)]="currentProduct.quantity" required min="0" [disabled]="isEdit" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="minThreshold">Seuil minimum *</label>
+                    <input type="number" id="minThreshold" name="minThreshold" [(ngModel)]="currentProduct.minThreshold" required min="0" class="form-input" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="isActive">Statut</label>
+                    <select id="isActive" name="isActive" [(ngModel)]="currentProduct.isActive" class="form-input form-select">
+                      <option [ngValue]="true">Actif</option>
+                      <option [ngValue]="false">Inactif</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+              <button type="submit" [disabled]="productForm.invalid || saving" class="btn btn-primary">
+                {{ saving ? 'Enregistrement…' : (isEdit ? 'Enregistrer' : 'Créer') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Modale Ajustement de Stock -->
+      <div *ngIf="stockModalOpen" class="modal-backdrop">
+        <div class="modal-container">
+          <div class="modal-header">
+            <h3 class="modal-title">Ajustement de stock — {{ displayName(selectedProduct) }}</h3>
+            <button class="btn-icon" type="button" (click)="closeStockModal()">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+          
+          <form (ngSubmit)="onAdjustStock()" #stockForm="ngForm">
+            <div class="modal-body">
+              <p class="text-secondary mb-3" style="font-size: 0.9rem;">
+                Stock actuel : <strong class="text-success">{{ selectedProduct?.quantity }}</strong>
+                {{ selectedProduct?.unitOfMeasure || 'unités' }}.
+              </p>
+
+              <div class="form-group">
+                <label class="form-label" for="adjustOperation">Opération</label>
+                <select
+                  id="adjustOperation"
+                  name="adjustOperation"
+                  [(ngModel)]="stockAdjustment.operation"
+                  class="form-input form-select"
+                >
+                  <option value="set">Définir la quantité</option>
+                  <option value="increment">Ajouter</option>
+                  <option value="decrement">Retirer</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="adjustQuantity">
+                  {{ stockAdjustment.operation === 'set' ? 'Nouvelle quantité' : 'Quantité' }}
+                </label>
+                <input 
+                  type="number" 
+                  id="adjustQuantity" 
+                  name="adjustQuantity" 
+                  [(ngModel)]="stockAdjustment.quantity" 
+                  required 
+                  min="0"
+                  class="form-input" 
+                  placeholder="EX: 150"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="adjustReason">Motif de l'ajustement</label>
+                <input 
+                  type="text" 
+                  id="adjustReason" 
+                  name="adjustReason" 
+                  [(ngModel)]="stockAdjustment.reason" 
+                  class="form-input" 
+                  placeholder="EX: Inventaire, casse, retour fournisseur..."
+                />
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeStockModal()">Annuler</button>
+              <button type="submit" [disabled]="stockForm.invalid || savingStock" class="btn btn-primary">
+                Valider l'ajustement
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>

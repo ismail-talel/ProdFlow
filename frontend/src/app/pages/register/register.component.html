@@ -1,0 +1,133 @@
+    <div class="register-wrapper">
+      <div class="register-card glass-card">
+        <div class="register-header">
+          <div class="brand">
+            <img src="brand/prodflow-logo.png" width="22" height="22" alt="" />
+            ProdFlow
+          </div>
+          <h2>Créer un compte</h2>
+          <p>Rejoignez l’espace collaborateur</p>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" #registerForm="ngForm" class="register-form">
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label" for="firstName">Prénom</label>
+              <input 
+                type="text" 
+                id="firstName" 
+                name="firstName" 
+                [(ngModel)]="firstName" 
+                required 
+                class="form-input" 
+                placeholder="Jean"
+                #firstNameInput="ngModel"
+              />
+              <div *ngIf="firstNameInput.invalid && firstNameInput.touched" class="text-danger mb-1 font-semibold" style="font-size: 0.75rem;">
+                Le prénom est requis.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="lastName">Nom</label>
+              <input 
+                type="text" 
+                id="lastName" 
+                name="lastName" 
+                [(ngModel)]="lastName" 
+                required 
+                class="form-input" 
+                placeholder="Dupont"
+                #lastNameInput="ngModel"
+              />
+              <div *ngIf="lastNameInput.invalid && lastNameInput.touched" class="text-danger mb-1 font-semibold" style="font-size: 0.75rem;">
+                Le nom est requis.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Adresse Email</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              [(ngModel)]="email" 
+              required 
+              email 
+              class="form-input" 
+              placeholder="jean.dupont@societe.com"
+              #emailInput="ngModel"
+            />
+            <div *ngIf="emailInput.invalid && emailInput.touched" class="text-danger mb-1 font-semibold" style="font-size: 0.75rem;">
+              Un email valide est requis.
+            </div>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label" for="phone">Téléphone</label>
+              <input 
+                type="text" 
+                id="phone" 
+                name="phone" 
+                [(ngModel)]="phone" 
+                required 
+                class="form-input" 
+                placeholder="0612345678"
+                #phoneInput="ngModel"
+              />
+              <div *ngIf="phoneInput.invalid && phoneInput.touched" class="text-danger mb-1 font-semibold" style="font-size: 0.75rem;">
+                Le téléphone est requis.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="role">Rôle / Service</label>
+              <select 
+                id="role" 
+                name="role" 
+                [(ngModel)]="role" 
+                required 
+                class="form-input form-select"
+              >
+                <option value="admin_magasin">Administrateur Magasin</option>
+                <option value="responsable_reception">Responsable Réception</option>
+                <option value="expedition_magasin">Expédition Magasin</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Mot de passe</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              [(ngModel)]="password" 
+              required 
+              minlength="6"
+              class="form-input" 
+              placeholder="••••••••"
+              #passInput="ngModel"
+            />
+            <div *ngIf="passInput.invalid && passInput.touched" class="text-danger mb-1 font-semibold" style="font-size: 0.75rem;">
+              Le mot de passe doit faire au moins 6 caractères.
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            [disabled]="registerForm.invalid || loading" 
+            class="btn btn-primary w-100 mb-3"
+          >
+            <span *ngIf="!loading">Créer un compte</span>
+            <span *ngIf="loading" class="spinner">Création en cours...</span>
+          </button>
+
+          <div class="register-footer">
+            Vous avez déjà un compte ? <a routerLink="/login">Se connecter</a>
+          </div>
+        </form>
+      </div>
+    </div>

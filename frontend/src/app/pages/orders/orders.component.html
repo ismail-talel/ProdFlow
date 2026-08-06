@@ -1,0 +1,617 @@
+    <div class="orders-container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="m-0">Commandes</h2>
+          <p class="text-muted m-0" style="font-size: 0.9rem;">Gérez l'approvisionnement, la réception et l'expédition</p>
+        </div>
+        
+        <button 
+          *ngIf="canCreate" 
+          class="btn btn-primary" 
+          (click)="openCreateModal()"
+        >
+          <span class="material-icons-round">add_shopping_cart</span>
+          <span>Nouveau Bon de Commande</span>
+        </button>
+      </div>
+
+      <!-- Filtres -->
+      <div class="glass-card mb-4">
+        <div class="grid grid-3">
+          <div class="form-group mb-0">
+            <label class="form-label" for="filterStatus">Statut</label>
+            <select 
+              id="filterStatus" 
+              [(ngModel)]="filterStatus" 
+              (change)="loadOrders()" 
+              class="form-input form-select"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="en_attente_verification">Attente Vérification</option>
+              <option value="confirme">Confirmé</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="filterSupplier">Fournisseur</label>
+            <select 
+              id="filterSupplier" 
+              [(ngModel)]="filterSupplier" 
+              (change)="loadOrders()" 
+              class="form-input form-select"
+            >
+              <option value="">Tous les fournisseurs</option>
+              <option *ngFor="let sup of suppliers" [value]="sup._id">{{ sup.name || sup.designation }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table des Commandes -->
+      <div *ngIf="loading" class="loading-state">
+        <span class="spinner">Chargement des commandes...</span>
+      </div>
+
+      <div *ngIf="!loading && orders.length === 0" class="empty-state">
+        <p>Aucune commande trouvée.</p>
+      </div>
+
+      <div *ngIf="!loading && orders.length > 0" class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>N° Commande</th>
+              <th>Fournisseur</th>
+              <th>Date de livraison</th>
+              <th>Articles</th>
+              <th>Montant Total</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let order of orders">
+              <td class="font-semibold">{{ order.orderNumber }}</td>
+              <td>{{ order.supplier?.name || order.supplier?.designation || 'Inconnu' }}</td>
+              <td>{{ order.deliveryDate | date:'dd/MM/yyyy' }}</td>
+              <td>{{ order.products?.length }} types</td>
+              <td class="font-semibold">{{ order.totalAmount | currency:'EUR':'symbol':'1.2-2':'fr' }}</td>
+              <td>
+                <span class="badge" [class]="getStatusClass(order.status)">
+                  {{ getStatusLabel(order.status) }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex gap-2 align-items-center order-actions">
+                  <button class="btn btn-secondary btn-icon" title="Détails" (click)="openDetailModal(order)">
+                    <span class="material-icons-round">visibility</span>
+                  </button>
+
+                  <button
+                    *ngIf="canModifyOrder(order)"
+                    class="btn btn-secondary btn-sm-action"
+                    title="Modifier"
+                    (click)="openDetailModal(order, 'modify')"
+                  >
+                    <span class="material-icons-round">edit</span>
+                    <span>Modifier</span>
+                  </button>
+
+                  <button
+                    *ngIf="canConfirmOrder(order)"
+                    class="btn btn-success btn-sm-action"
+                    title="Confirmer"
+                    (click)="openDetailModal(order, 'confirm')"
+                  >
+                    <span class="material-icons-round">check_circle</span>
+                    <span>Confirmer</span>
+                  </button>
+
+                  <button class="btn btn-secondary btn-icon" title="Imprimer PDF" (click)="onPrintOrder(order._id)">
+                    <span class="material-icons-round">picture_as_pdf</span>
+                  </button>
+
+                  <button
+                    *ngIf="canDeleteOrder(order)"
+                    class="btn btn-secondary btn-icon btn-danger-hover"
+                    title="Supprimer / Annuler"
+                    (click)="onDeleteOrder(order)"
+                  >
+                    <span class="material-icons-round">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MODALE CRÉATION COMMANDE -->
+      <div *ngIf="createModalOpen" class="modal-backdrop">
+        <div class="modal-container" style="max-width: 750px;">
+          <div class="modal-header">
+            <h3 class="modal-title">Créer un Bon de Commande</h3>
+            <button class="btn-icon" (click)="closeCreateModal()">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+
+          <form (ngSubmit)="onCreateOrder()" #orderForm="ngForm">
+            <div class="modal-body" style="max-height: 65vh;">
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="newSupplier">Fournisseur</label>
+                  <select 
+                    id="newSupplier" 
+                    name="newSupplier" 
+                    [(ngModel)]="newOrder.supplierId" 
+                    (change)="onSupplierChange()"
+                    required 
+                    class="form-input form-select"
+                  >
+                    <option value="">Sélectionner un fournisseur</option>
+                    <option *ngFor="let sup of suppliers" [value]="sup._id">{{ sup.name || sup.designation }}</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="deliveryDate">Date de Livraison Prévue</label>
+                  <input 
+                    type="date" 
+                    id="deliveryDate" 
+                    name="deliveryDate" 
+                    [(ngModel)]="newOrder.deliveryDate" 
+                    required 
+                    class="form-input" 
+                  />
+                </div>
+              </div>
+
+              <!-- Lignes de produits -->
+              <h4 class="mb-2 mt-3 font-semibold" style="font-size: 0.95rem;">Produits à commander</h4>
+              
+              <div *ngIf="!newOrder.supplierId" class="text-muted mb-3" style="font-size: 0.85rem;">
+                Sélectionnez d’abord un fournisseur, puis ajoutez des lignes produits.
+              </div>
+              <div *ngIf="newOrder.supplierId && supplierProducts.length === 0" class="text-muted mb-3" style="font-size: 0.85rem;">
+                Aucun produit chargé pour ce fournisseur. Vérifiez l’association produit ↔ fournisseur.
+              </div>
+              <div *ngIf="newOrder.supplierId && newOrder.products.length === 0 && supplierProducts.length > 0" class="text-muted mb-3" style="font-size: 0.85rem;">
+                Cliquez sur « Ajouter un produit » pour composer le bon de commande.
+              </div>
+
+              <div *ngFor="let row of newOrder.products; let i = index" class="product-row-inputs mb-2">
+                <div class="grid grid-4" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: flex-end;">
+                  <div class="form-group mb-0">
+                    <label *ngIf="i === 0" class="form-label">Produit</label>
+                    <select 
+                      [(ngModel)]="row.productId" 
+                      [name]="'prod_' + i" 
+                      (change)="onProductSelect(i)"
+                      required 
+                      class="form-input form-select"
+                    >
+                      <option value="">Choisir</option>
+                      <option *ngFor="let prod of supplierProducts" [value]="prod._id">{{ prod.name || prod.designation }} ({{ prod.reference }})</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group mb-0">
+                    <label *ngIf="i === 0" class="form-label">Qté</label>
+                    <input 
+                      type="number" 
+                      [(ngModel)]="row.quantity" 
+                      [name]="'qty_' + i" 
+                      (ngModelChange)="calculateOrderTotal()"
+                      required 
+                      min="1" 
+                      class="form-input"
+                    />
+                  </div>
+
+                  <div class="form-group mb-0">
+                    <label *ngIf="i === 0" class="form-label">Prix Unit. (€)</label>
+                    <input 
+                      type="number" 
+                      [value]="row.unitPrice" 
+                      disabled 
+                      class="form-input"
+                      style="opacity: 0.7;"
+                    />
+                  </div>
+
+                  <div class="form-group mb-0">
+                    <button type="button" class="btn btn-secondary btn-icon text-danger" style="margin-top: 1.5rem;" (click)="removeProductRow(i)">
+                      <span class="material-icons-round">remove_circle_outline</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                type="button" 
+                [disabled]="!newOrder.supplierId" 
+                class="btn btn-secondary mb-3 mt-2" 
+                (click)="addProductRow()"
+              >
+                <span class="material-icons-round">add</span>
+                <span>Ajouter un produit</span>
+              </button>
+
+              <div class="form-group mt-3">
+                <label class="form-label" for="notes">Notes / Observations</label>
+                <textarea 
+                  id="notes" 
+                  name="notes" 
+                  [(ngModel)]="newOrder.notes" 
+                  class="form-input" 
+                  rows="2"
+                  placeholder="Instructions de livraison, commentaires..."
+                ></textarea>
+              </div>
+
+              <!-- Total affiché -->
+              <div class="d-flex justify-content-end align-items-center mt-3 p-3 bg-tertiary" style="border-radius: var(--border-radius-md);">
+                <div style="text-align: right;">
+                  <span class="text-secondary" style="font-size: 0.85rem;">Total Estimé</span>
+                  <div class="font-semibold text-primary" style="font-size: 1.5rem;">
+                    {{ newOrderTotal | currency:'EUR':'symbol':'1.2-2':'fr' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Annuler</button>
+              <button type="submit" [disabled]="orderForm.invalid || newOrder.products.length === 0 || savingOrder" class="btn btn-primary">
+                Créer la commande
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- MODALE PRÉVISUALISATION PDF -->
+      <div *ngIf="pdfPreviewOpen" class="modal-backdrop pdf-modal-backdrop">
+        <div class="modal-container pdf-preview-modal">
+          <div class="modal-header pdf-preview-header">
+            <div class="pdf-preview-title-wrap">
+              <span class="material-icons-outlined pdf-preview-icon">picture_as_pdf</span>
+              <div>
+                <h3 class="modal-title">Aperçu du bon de commande</h3>
+                <div class="text-muted pdf-preview-subtitle">{{ pdfFileName || 'Document PDF' }}</div>
+              </div>
+            </div>
+            <div class="pdf-preview-toolbar">
+              <a
+                class="btn btn-secondary btn-sm-action"
+                [href]="pdfDownloadUrl"
+                [download]="pdfFileName"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="material-icons-outlined">download</span>
+                Télécharger
+              </a>
+              <button type="button" class="btn btn-secondary btn-sm-action" (click)="printPdfPreview()">
+                <span class="material-icons-outlined">print</span>
+                Imprimer
+              </button>
+              <button class="btn-icon" type="button" (click)="closePdfPreview()" title="Fermer">
+                <span class="material-icons-outlined">close</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-body pdf-preview-body">
+            <div class="pdf-preview-frame">
+              <div class="pdf-paper-shadow">
+                <iframe
+                  *ngIf="pdfPreviewUrl"
+                  [src]="pdfPreviewUrl"
+                  title="Aperçu PDF bon de commande"
+                  class="pdf-preview-iframe"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer pdf-preview-footer">
+            <button type="button" class="btn btn-secondary" (click)="closePdfPreview()">Fermer</button>
+            <a class="btn btn-primary" [href]="pdfDownloadUrl" target="_blank" rel="noopener noreferrer">
+              <span class="material-icons-outlined">open_in_new</span>
+              Ouvrir dans un nouvel onglet
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODALE DÉTAIL / ACTIONS DE COMMANDE -->
+      <div *ngIf="detailModalOpen" class="modal-backdrop">
+        <div class="modal-container order-detail-modal">
+          <div class="order-detail-header">
+            <div class="order-detail-heading">
+              <p class="order-detail-eyebrow">Bon de commande</p>
+              <div class="order-detail-title-row">
+                <h3 class="modal-title m-0">{{ selectedOrder?.orderNumber }}</h3>
+                <span class="badge" [class]="getStatusClass(selectedOrder?.status)">
+                  {{ getStatusLabel(selectedOrder?.status) }}
+                </span>
+              </div>
+              <p class="order-detail-meta">
+                Créé le {{ selectedOrder?.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                <span *ngIf="selectedOrder?.createdBy">
+                  · {{ selectedOrder?.createdBy?.firstName }} {{ selectedOrder?.createdBy?.lastName }}
+                </span>
+              </p>
+            </div>
+            <button class="btn-icon" type="button" (click)="closeDetailModal()" title="Fermer">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+
+          <div class="modal-body order-detail-body" #detailBody>
+            <!-- Résumé -->
+            <div class="order-summary">
+              <div class="order-summary-item">
+                <span>Fournisseur</span>
+                <strong>{{ selectedOrder?.supplier?.name || selectedOrder?.supplier?.designation || '—' }}</strong>
+              </div>
+              <div class="order-summary-item">
+                <span>Livraison</span>
+                <strong>{{ selectedOrder?.deliveryDate ? (selectedOrder?.deliveryDate | date:'dd/MM/yyyy') : 'Non définie' }}</strong>
+              </div>
+              <div class="order-summary-item order-summary-total">
+                <span>Total</span>
+                <strong>{{ selectedOrder?.totalAmount | currency:'EUR':'symbol':'1.2-2':'fr' }}</strong>
+              </div>
+            </div>
+
+            <!-- Articles -->
+            <section class="order-section">
+              <div class="order-section-head">
+                <h4>Articles</h4>
+                <span>{{ selectedOrder?.products?.length || 0 }} ligne(s)</span>
+              </div>
+
+              <div class="order-lines">
+                <div class="order-line order-line-head">
+                  <span>Produit</span>
+                  <span>Qté</span>
+                  <span>Prix</span>
+                  <span>Total</span>
+                </div>
+                <div *ngFor="let p of selectedOrder?.products" class="order-line">
+                  <div class="order-line-product">
+                    <strong>{{ p.product?.name || p.product?.designation || 'Produit' }}</strong>
+                    <span *ngIf="p.product?.reference">{{ p.product?.reference }}</span>
+                    <span *ngIf="p.receivedQuantity > 0 || p.remainingQuantity > 0" class="order-line-recv">
+                      Reçu {{ p.receivedQuantity || 0 }} · reste {{ p.remainingQuantity || 0 }}
+                    </span>
+                  </div>
+                  <span class="order-line-num">{{ p.quantity }}</span>
+                  <span class="order-line-num">{{ p.unitPrice | currency:'EUR':'symbol':'1.2-2':'fr' }}</span>
+                  <span class="order-line-num order-line-amount">{{ p.total | currency:'EUR':'symbol':'1.2-2':'fr' }}</span>
+                </div>
+              </div>
+
+              <p *ngIf="selectedOrder?.notes && !canModifyOrder(selectedOrder)" class="order-notes">
+                {{ selectedOrder?.notes }}
+              </p>
+            </section>
+
+            <!-- Modification -->
+            <section
+              *ngIf="canModifyOrder(selectedOrder)"
+              id="panel-modify"
+              class="order-action"
+              [class.panel-highlight]="detailFocus === 'modify'"
+            >
+              <div class="order-section-head">
+                <h4>Modifier</h4>
+                <span>Reste en attente de vérification</span>
+              </div>
+
+              <div class="grid grid-2 mb-3">
+                <div class="form-group mb-0">
+                  <label class="form-label">Date de livraison</label>
+                  <input type="date" class="form-input" [(ngModel)]="editForm.deliveryDate" name="editDeliveryDate" />
+                </div>
+                <div class="form-group mb-0">
+                  <label class="form-label">Total estimé</label>
+                  <div class="order-edit-total">{{ calculateEditTotal() | currency:'EUR':'symbol':'1.2-2':'fr' }}</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea class="form-input" rows="2" [(ngModel)]="editForm.notes" name="editNotes" placeholder="Notes / observations..."></textarea>
+              </div>
+
+              <div *ngFor="let item of editForm.products; let i = index" class="order-edit-row">
+                <span class="order-edit-name">{{ item.name }}</span>
+                <input type="number" min="1" [(ngModel)]="item.quantity" [name]="'editQty'+i" class="form-input" placeholder="Qté" />
+                <input type="number" min="0" step="0.01" [(ngModel)]="item.unitPrice" [name]="'editPrice'+i" class="form-input" placeholder="Prix" />
+              </div>
+
+              <div class="form-group mt-3 mb-3">
+                <input type="text" [(ngModel)]="actionComment" name="modifyComment" class="form-input" placeholder="Motif (historique)…" />
+              </div>
+
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-primary" [disabled]="submittingAction || editForm.products.length === 0" (click)="onModifyOrder()">
+                  Enregistrer
+                </button>
+              </div>
+            </section>
+
+            <!-- Confirmation -->
+            <section
+              *ngIf="canConfirmOrder(selectedOrder)"
+              id="panel-confirm"
+              class="order-action"
+              [class.panel-highlight]="detailFocus === 'confirm'"
+            >
+              <div class="order-section-head">
+                <h4>Confirmer</h4>
+                <span>Validation définitive</span>
+              </div>
+              <div class="form-group mb-3">
+                <input type="text" [(ngModel)]="actionComment" name="confirmComment" class="form-input" placeholder="Observation optionnelle…" />
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-success" [disabled]="submittingAction" (click)="onConfirmOrder(selectedOrder._id)">
+                  Confirmer la commande
+                </button>
+              </div>
+            </section>
+
+            <!-- Réception -->
+            <section *ngIf="selectedOrder?.status === 'confirme' && (isReception || isAdmin)" class="order-action">
+              <div class="order-section-head">
+                <h4>Réception</h4>
+                <span>Entrée de stock</span>
+              </div>
+
+              <div *ngFor="let item of receptionProducts" class="order-recv-row">
+                <div>
+                  <strong>{{ item.name }}</strong>
+                  <span>Reste : {{ item.remainingQuantity }}</span>
+                </div>
+                <input
+                  type="number"
+                  [(ngModel)]="item.receivedQty"
+                  [max]="item.remainingQuantity"
+                  min="0"
+                  class="form-input"
+                />
+              </div>
+
+              <div class="form-group mt-3 mb-3">
+                <input type="text" [(ngModel)]="actionComment" name="receiveComment" class="form-input" placeholder="Observations…" />
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-success" [disabled]="submittingAction" (click)="onReceiveOrder(selectedOrder._id)">
+                  Enregistrer la réception
+                </button>
+              </div>
+            </section>
+
+            <!-- Expédition -->
+            <section *ngIf="selectedOrder?.status === 'confirme' && (isExpedition || isAdmin)" class="order-action">
+              <div class="order-section-head">
+                <h4>Expédition</h4>
+                <span>Sortie magasin</span>
+              </div>
+              <div class="form-group mb-3">
+                <input type="text" [(ngModel)]="actionComment" name="expediteComment" class="form-input" placeholder="Commentaire optionnel…" />
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-primary" [disabled]="submittingAction" (click)="onExpediteOrder(selectedOrder._id)">
+                  Valider l’expédition
+                </button>
+              </div>
+            </section>
+
+            <!-- Historique -->
+            <section class="order-section order-history-section">
+              <div class="order-section-head">
+                <h4>Historique</h4>
+                <span>{{ getSortedHistory().length }} événement(s)</span>
+              </div>
+
+              <div class="history-timeline" *ngIf="getSortedHistory().length > 0; else emptyHistory">
+                <div *ngFor="let h of getSortedHistory()" class="timeline-item">
+                  <div class="timeline-marker" [class]="h.action"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-top">
+                      <div>
+                        <span class="timeline-action">{{ getActionLabel(h.action) }}</span>
+                        <p class="timeline-desc" *ngIf="editingHistoryId !== (h.historyId || h._id)">{{ h.description }}</p>
+                      </div>
+                      <div class="timeline-aside">
+                        <time>{{ h.date | date:'dd/MM/yyyy HH:mm' }}</time>
+                        <button
+                          *ngIf="canConfirmModify && editingHistoryId !== (h.historyId || h._id) && h.action !== 'MAJ_HISTORIQUE'"
+                          class="btn-icon"
+                          type="button"
+                          title="Modifier"
+                          (click)="startHistoryEdit(h)"
+                        >
+                          <span class="material-icons-round">edit</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <p class="timeline-by" *ngIf="editingHistoryId !== (h.historyId || h._id)">
+                      {{ h.user?.nom }} · {{ getRoleLabel(h.user?.role || '') }}
+                    </p>
+                    <p class="timeline-comment" *ngIf="editingHistoryId !== (h.historyId || h._id) && h.commentaire">
+                      {{ h.commentaire }}
+                    </p>
+                    <p class="timeline-edited" *ngIf="editingHistoryId !== (h.historyId || h._id) && h.details?.additionalInfo?.lastEditedBy">
+                      Modifié par {{ h.details.additionalInfo.lastEditedBy.nom }}
+                      le {{ h.details.additionalInfo.lastEditedAt | date:'dd/MM/yyyy HH:mm' }}
+                    </p>
+
+                    <div *ngIf="editingHistoryId === (h.historyId || h._id)" class="history-edit-box">
+                      <div class="form-group mb-2">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-input" [(ngModel)]="historyEditDescription" name="histDesc" />
+                      </div>
+                      <div class="form-group mb-2">
+                        <label class="form-label">Commentaire</label>
+                        <textarea class="form-input" rows="2" [(ngModel)]="historyEditComment" name="histComment"></textarea>
+                      </div>
+                      <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-secondary" (click)="cancelHistoryEdit()">Annuler</button>
+                        <button type="button" class="btn btn-primary" [disabled]="submittingAction" (click)="saveHistoryEdit()">Enregistrer</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ng-template #emptyHistory>
+                <p class="order-empty-history">Aucun événement enregistré.</p>
+              </ng-template>
+            </section>
+          </div>
+
+          <div class="modal-footer order-detail-footer">
+            <button type="button" class="btn btn-secondary" (click)="onPrintOrder(selectedOrder._id)">
+              <span class="material-icons-round">picture_as_pdf</span>
+              PDF
+            </button>
+            <button
+              *ngIf="canDeleteOrder(selectedOrder)"
+              type="button"
+              class="btn btn-secondary btn-danger-hover"
+              [disabled]="submittingAction"
+              (click)="onDeleteOrder(selectedOrder)"
+            >
+              <span class="material-icons-round">delete</span>
+              Supprimer
+            </button>
+            <div class="order-footer-spacer"></div>
+            <button
+              *ngIf="canModifyOrder(selectedOrder)"
+              type="button"
+              class="btn btn-secondary"
+              (click)="scrollToActions('modify')"
+            >
+              Modifier
+            </button>
+            <button
+              *ngIf="canConfirmOrder(selectedOrder)"
+              type="button"
+              class="btn btn-success"
+              [disabled]="submittingAction"
+              (click)="onConfirmOrder(selectedOrder._id)"
+            >
+              Confirmer
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">Fermer</button>
+          </div>
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,234 @@
+<div class="company-page">
+  <div class="page-heading">
+    <div>
+      <p class="section-eyebrow m-0">Configuration</p>
+      <h2 class="m-0">Société</h2>
+      <p class="text-muted m-0 page-sub">
+        Une seule société pour toute l’application — utilisée sur les bons de commande et documents PDF.
+      </p>
+    </div>
+    <div class="heading-actions" *ngIf="!loading">
+      <button type="button" class="btn btn-secondary" (click)="resetForm()" [disabled]="saving || uploadingLogo">
+        Annuler
+      </button>
+      <button type="button" class="btn btn-primary" (click)="onSubmit()" [disabled]="saving || uploadingLogo || !form.name">
+        {{ saving || uploadingLogo ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <span class="spinner">Chargement de la société…</span>
+  </div>
+
+  <form *ngIf="!loading" class="company-layout" (ngSubmit)="onSubmit()" #companyForm="ngForm">
+    <aside class="glass-card company-summary">
+      <div class="summary-logo">
+        <img *ngIf="logoPreviewUrl || currentLogoUrl" [src]="logoPreviewUrl || currentLogoUrl" alt="Logo société" />
+        <span *ngIf="!logoPreviewUrl && !currentLogoUrl" class="material-icons-outlined">apartment</span>
+      </div>
+      <h3 class="m-0">{{ form.name || 'Votre société' }}</h3>
+      <p class="text-muted m-0 summary-meta">
+        {{ form.legalForm || '—' }}
+        <span *ngIf="form.city"> · {{ form.city }}</span>
+      </p>
+      <div class="summary-chips">
+        <span class="badge badge-info">Société unique</span>
+        <span class="badge badge-success">Active</span>
+      </div>
+      <div class="summary-lines">
+        <div *ngIf="form.email"><span>Email</span>{{ form.email }}</div>
+        <div *ngIf="form.phone1"><span>Tél.</span>{{ form.phone1 }}</div>
+        <div *ngIf="form.taxId || form.matricule"><span>ID</span>{{ form.taxId || form.matricule }}</div>
+        <div *ngIf="form.currency"><span>Devise</span>{{ form.currency }}</div>
+      </div>
+    </aside>
+
+    <div class="company-forms">
+      <section class="glass-card form-section">
+        <h4 class="form-section-title">Identité</h4>
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label class="form-label" for="name">Nom *</label>
+            <input id="name" name="name" [(ngModel)]="form.name" required class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="designation">Désignation commerciale</label>
+            <input id="designation" name="designation" [(ngModel)]="form.designation" class="form-input" />
+          </div>
+        </div>
+        <div class="grid grid-2">
+          <div class="form-group mb-0">
+            <label class="form-label" for="legalForm">Forme juridique</label>
+            <input id="legalForm" name="legalForm" [(ngModel)]="form.legalForm" class="form-input" placeholder="SARL" />
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" for="currency">Devise</label>
+            <input id="currency" name="currency" [(ngModel)]="form.currency" class="form-input" placeholder="DT" />
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-card form-section">
+        <h4 class="form-section-title">Identifiants légaux</h4>
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label class="form-label" for="matricule">Matricule</label>
+            <input id="matricule" name="matricule" [(ngModel)]="form.matricule" class="form-input" style="text-transform: uppercase;" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="taxId">N° fiscal / TVA</label>
+            <input id="taxId" name="taxId" [(ngModel)]="form.taxId" class="form-input" style="text-transform: uppercase;" />
+          </div>
+        </div>
+        <div class="grid grid-2">
+          <div class="form-group mb-0">
+            <label class="form-label" for="registrationNumber">N° registre</label>
+            <input id="registrationNumber" name="registrationNumber" [(ngModel)]="form.registrationNumber" class="form-input" />
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" for="vatNumber">N° TVA</label>
+            <input id="vatNumber" name="vatNumber" [(ngModel)]="form.vatNumber" class="form-input" style="text-transform: uppercase;" />
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-card form-section">
+        <h4 class="form-section-title">Contact</h4>
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input type="email" id="email" name="email" [(ngModel)]="form.email" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="website">Site web</label>
+            <input id="website" name="website" [(ngModel)]="form.website" class="form-input" />
+          </div>
+        </div>
+        <div class="grid grid-3">
+          <div class="form-group mb-0">
+            <label class="form-label" for="phone1">Téléphone 1</label>
+            <input id="phone1" name="phone1" [(ngModel)]="form.phone1" class="form-input" />
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" for="phone2">Téléphone 2</label>
+            <input id="phone2" name="phone2" [(ngModel)]="form.phone2" class="form-input" />
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" for="fax">Fax</label>
+            <input id="fax" name="fax" [(ngModel)]="form.fax" class="form-input" />
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-card form-section">
+        <h4 class="form-section-title">Adresse</h4>
+        <div class="form-group">
+          <label class="form-label" for="address">Adresse</label>
+          <input id="address" name="address" [(ngModel)]="form.address" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="addressComplement">Complément</label>
+          <input id="addressComplement" name="addressComplement" [(ngModel)]="form.addressComplement" class="form-input" />
+        </div>
+        <div class="grid grid-3">
+          <div class="form-group mb-0">
+            <label class="form-label" for="postalCode">Code postal</label>
+            <input id="postalCode" name="postalCode" [(ngModel)]="form.postalCode" class="form-input" />
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" for="city">Ville</label>
+            <input id="city" name="city" [(ngModel)]="form.city" class="form-input" />
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" for="country">Pays</label>
+            <input id="country" name="country" [(ngModel)]="form.country" class="form-input" />
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-card form-section">
+        <h4 class="form-section-title">Logo (PDF / documents)</h4>
+        <div class="logo-upload-row">
+          <div class="logo-preview-box">
+            <img *ngIf="logoPreviewUrl || currentLogoUrl" [src]="logoPreviewUrl || currentLogoUrl" alt="Logo" />
+            <span *ngIf="!logoPreviewUrl && !currentLogoUrl" class="material-icons-outlined">image</span>
+          </div>
+          <div class="logo-upload-fields">
+            <div class="form-group">
+              <label class="form-label" for="logoFile">Fichier logo</label>
+              <input type="file" id="logoFile" accept="image/png,image/jpeg,image/gif,image/webp" (change)="onLogoSelected($event)" class="form-input" />
+            </div>
+            <div class="grid grid-2">
+              <div class="form-group mb-0">
+                <label class="form-label" for="logoWidth">Largeur (px)</label>
+                <input type="number" id="logoWidth" name="logoWidth" [(ngModel)]="form.logoWidth" min="40" max="300" class="form-input" />
+              </div>
+              <div class="form-group mb-0">
+                <label class="form-label" for="logoHeight">Hauteur (px)</label>
+                <input type="number" id="logoHeight" name="logoHeight" [(ngModel)]="form.logoHeight" min="30" max="200" class="form-input" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-card form-section">
+        <h4 class="form-section-title">Coordonnées bancaires</h4>
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label class="form-label" for="bankName">Banque</label>
+            <input id="bankName" name="bankName" [(ngModel)]="form.bankName" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="bankAccount">Compte</label>
+            <input id="bankAccount" name="bankAccount" [(ngModel)]="form.bankAccount" class="form-input" />
+          </div>
+        </div>
+        <div class="grid grid-2">
+          <div class="form-group mb-0">
+            <label class="form-label" for="bankIban">IBAN</label>
+            <input id="bankIban" name="bankIban" [(ngModel)]="form.bankIban" class="form-input" style="text-transform: uppercase;" />
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" for="bankBic">BIC</label>
+            <input id="bankBic" name="bankBic" [(ngModel)]="form.bankBic" class="form-input" style="text-transform: uppercase;" />
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-card form-section">
+        <h4 class="form-section-title">Conditions par défaut (bons de commande)</h4>
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label class="form-label" for="defaultPaymentTerms">Paiement</label>
+            <input id="defaultPaymentTerms" name="defaultPaymentTerms" [(ngModel)]="form.defaultPaymentTerms" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="defaultDeliveryTerms">Livraison</label>
+            <input id="defaultDeliveryTerms" name="defaultDeliveryTerms" [(ngModel)]="form.defaultDeliveryTerms" class="form-input" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="defaultWarranty">Garantie</label>
+          <input id="defaultWarranty" name="defaultWarranty" [(ngModel)]="form.defaultWarranty" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="defaultNotes">Notes BC</label>
+          <textarea id="defaultNotes" name="defaultNotes" [(ngModel)]="form.defaultNotes" class="form-input" rows="2"></textarea>
+        </div>
+        <div class="form-group mb-0">
+          <label class="form-label" for="notes">Notes internes</label>
+          <textarea id="notes" name="notes" [(ngModel)]="form.notes" class="form-input" rows="2"></textarea>
+        </div>
+      </section>
+
+      <div class="form-footer-actions">
+        <button type="button" class="btn btn-secondary" (click)="resetForm()" [disabled]="saving || uploadingLogo">Annuler</button>
+        <button type="submit" class="btn btn-primary" [disabled]="companyForm.invalid || saving || uploadingLogo">
+          {{ saving || uploadingLogo ? 'Enregistrement…' : 'Enregistrer la société' }}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
