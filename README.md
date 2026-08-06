@@ -39,16 +39,7 @@ Stack :
 ```bash
 cd backand
 npm install
-```
-
-Créez un fichier `backand/.env` :
-
-```env
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/gestion-stock
-JWT_SECRET=votre_secret_jwt
-JWT_EXPIRES_IN=7d
-```
+``
 
 Démarrez l’API :
 
@@ -112,7 +103,4 @@ Routes principales sous `/api` :
 - `/orders/:id/print`, `/orders/:id/download` — PDF
 - `GET /health` — santé du service
 
-## Notes
 
-- Ne committez pas le fichier `backand/.env` (secrets).
-- Le dossier `uploads/` peut contenir des logos / fichiers uploadés.
